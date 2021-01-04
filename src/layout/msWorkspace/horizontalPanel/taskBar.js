@@ -356,6 +356,33 @@ var TileableItem = GObject.registerClass(
             } else {
                 this.unmakePersistentAction.hide();
             }
+
+            // TODO: Provide some way to include excluded windows
+            // TODO[2]: Perhaps it's better to exclude only specific window and not all windows of the same class?
+            this.menu.addAction(
+                'Always float this app',
+                () => {
+                    const settings = getSettings('layouts');
+                    // Am I touching some private props?
+                    // Maybe, but this was quickest way to get wm_class from TileableItem
+                    const windowClass = this.tileable._metaWindow.wm_class;
+
+                    const excluded = settings
+                        .get_string('windows-excluded')
+                        .split(',')
+                        .map((item) => item.trim());
+
+                    if (!excluded.includes(windowClass)) {
+                        excluded.push(windowClass);
+                    }
+
+                    settings.set_string('windows-excluded', excluded.join(','));
+                },
+                Gio.icon_new_for_string(
+                    `${Me.path}/assets/icons/float-symbolic.svg`
+                )
+            );
+
             this.menu.addAction(
                 'Close',
                 () => {
